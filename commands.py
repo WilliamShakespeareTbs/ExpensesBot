@@ -6,7 +6,7 @@ from aiogram.fsm.context import FSMContext
 import request
 import keyboard as kb
 import list_of_expenses as loe
-import add_category as fc
+from states import Categories, Expenses
 
 router = Router()
 
@@ -24,12 +24,12 @@ async def start(message: Message):
 @router.message(Command('addcategory'))
 async def new_category(message: Message, state: FSMContext):
     await message.answer('Выберите имя для новой категории: ')
-    await state.set_state(fc.Categories.category_name)
+    await state.set_state(Categories.category_name)
 
 
 @router.message(Command('showcategories'))
 async def show_categories(message: Message, state: FSMContext):
-    await state.set_state(fc.Categories.category_for_look)
+    await state.set_state(Categories.category_for_look)
     cat_dict = await request.get_categories(message.from_user.id)
     inline_list = await kb.create_cat_kb(cat_dict)
     await message.answer("Вот все категории: ", reply_markup=inline_list)
@@ -37,7 +37,7 @@ async def show_categories(message: Message, state: FSMContext):
 
 @router.message(Command('addexpense'))
 async def add_new_expense(message: Message, state: FSMContext):
-    await state.set_state(fc.Categories.category_for_expense)
+    await state.set_state(Categories.category_for_expense)
     cat_dict = await request.get_categories(message.from_user.id)
     inline_list = await kb.create_cat_kb(cat_dict)
     await message.answer("Выберите категорию расходов: ", reply_markup=inline_list)
@@ -45,5 +45,18 @@ async def add_new_expense(message: Message, state: FSMContext):
 
 @router.message(Command('showexpenses'))
 async def show_categories(message: Message, state: FSMContext):
-    await state.set_state(fc.Categories.category_for_expense)
-    await loe.show_list_of_all_expenses(message.from_user.id, state)
+    await loe.show_list_of_all_expenses(message.from_user.id)
+
+
+@router.message(Command('deleteexpense'))
+async def delete_expense(message: Message, state: FSMContext):
+    await state.set_state(Expenses.delete_exp)
+    await message.answer(text='Выберите расход для удаления: ', reply_markup=kb.cat_or_overall_show_button)
+
+
+@router.message(Command('deletecategory'))
+async def delete_category(message: Message, state: FSMContext):
+    await state.set_state(Categories.delete_cat)
+    cat_dict = await request.get_categories(message.from_user.id)
+    inline_list = await kb.create_cat_kb(cat_dict)
+    await message.answer(text="Выберите категорию для удаления, все расходы будут перемещены в Прочее", reply_markup=inline_list)

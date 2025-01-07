@@ -6,14 +6,16 @@ import os
 import add_expense
 import config
 import models
-import commands, add_category, list_of_expenses
+import commands, add_category, list_of_expenses, delete_exp, delete_cat
 
 load_dotenv()
 bot = Bot(os.getenv('TOKEN'))
 add_expense.bot = bot
 list_of_expenses.bot = bot
+delete_exp.bot = bot
+delete_cat.bot = bot
 dp = Dispatcher()
-dp.include_routers(commands.router, add_category.router, list_of_expenses.router, add_expense.router)
+dp.include_routers(commands.router, add_category.router, list_of_expenses.router, add_expense.router, delete_exp.router, delete_cat.router)
 
 
 async def main():

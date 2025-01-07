@@ -12,7 +12,6 @@ router = Router()
 @router.message(Categories.category_name, F.text)
 async def new_category_name(message: Message, state: FSMContext):
     new_cat_name = message.text
-    print(len(new_cat_name))
     if len(new_cat_name) > 20:
         new_cat_name = new_cat_name[:20]
     await request.add_category(new_cat_name, message.from_user.id)

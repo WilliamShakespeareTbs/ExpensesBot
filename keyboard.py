@@ -16,3 +16,9 @@ date_buttons = InlineKeyboardMarkup(inline_keyboard=[
 
 
 skip_button = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text='Пропустить', callback_data='skip')]])
+
+
+cat_or_overall_show_button = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text='Выбрать категорию', callback_data='category')],
+    [InlineKeyboardButton(text='Показать все расходы', callback_data='overall')]
+])

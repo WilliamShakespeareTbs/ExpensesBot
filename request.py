@@ -50,19 +50,6 @@ async def add_new_user(tg_id):
         await session.commit()
     await add_category('Прочее', tg_id)
 
-'''
-async def get_tgid_from_categoryid(id):
-    async with async_session() as session:
-        query = select(Category).filter_by(id = id)
-        result = await session.execute(query)
-        user = result.scalars().all()
-        for u in user:
-            query2 = select(User).filter_by(id = u.user_id)
-            result2 = await session.execute(query2)
-            our_tg_id = result2.scalars().all()
-            for tg_id in our_tg_id:
-                return tg_id.tg_id
-            '''
 
 async def add_expension(data: dict):
     category_id = data.get('cat_id')
@@ -103,3 +90,41 @@ async def get_list_of_all_expenses(tg_id):
         for elem in e:
             exp_list.append(elem)
     return exp_list
+
+
+async def delete_expence_by_exp_class(exp):
+    async with async_session() as session:
+        await session.delete(exp)
+        await session.commit()
+
+
+async def get_cat_id_from_cat_name(tg_id, cat_name):
+    async with async_session() as session:
+        query = select(User).filter_by(tg_id = tg_id)
+        result = await session.execute(query)
+        user = result.scalar_one()
+        query_2 = select(Category).filter_by(user_id = user.id)
+        result_2 = await session.execute(query_2)
+        cats = result_2.scalars().all()
+        for c in cats:
+            if c.name == cat_name:
+                return c.id
+            
+
+async def transfer_expense_to_another_cat(old_cat_id, new_cat_id):
+    async with async_session() as session:
+        query = select(Expence).filter_by(category = old_cat_id)
+        result = await session.execute(query)
+        exp_s = result.scalars().all()
+        for e in exp_s:
+            e.category = new_cat_id
+        await session.commit()
+
+
+async def delete_category(cat_id):
+    async with async_session() as session:
+        query = select(Category).filter_by(id = cat_id)
+        result = await session.execute(query)
+        cat_to_delete = result.scalar_one()
+        await session.delete(cat_to_delete)
+        await session.commit()
