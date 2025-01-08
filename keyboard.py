@@ -22,3 +22,9 @@ cat_or_overall_show_button = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='Выбрать категорию', callback_data='category')],
     [InlineKeyboardButton(text='Показать все расходы', callback_data='overall')]
 ])
+
+
+prop_to_edit_in_expense = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text='Категория', callback_data='category'), InlineKeyboardButton(text='Дата', callback_data='date')],
+    [InlineKeyboardButton(text='Сумма', callback_data='sum'), InlineKeyboardButton(text='Комментарий', callback_data='comment')]
+])

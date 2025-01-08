@@ -60,3 +60,17 @@ async def delete_category(message: Message, state: FSMContext):
     cat_dict = await request.get_categories(message.from_user.id)
     inline_list = await kb.create_cat_kb(cat_dict)
     await message.answer(text="Выберите категорию для удаления, все расходы будут перемещены в Прочее", reply_markup=inline_list)
+
+
+@router.message(Command('editcategory'))
+async def edit_category(message: Message, state: FSMContext):
+    await state.set_state(Categories.edit_cat)
+    cat_dict = await request.get_categories(message.from_user.id)
+    inline_list = await kb.create_cat_kb(cat_dict)
+    await message.answer(text="Выберите категорию для переименования", reply_markup=inline_list)
+
+
+@router.message(Command('editexpense'))
+async def edit_category(message: Message, state: FSMContext):
+    await state.set_state(Expenses.edit_exp)
+    await message.answer(text="Выберите расход для редактирования", reply_markup=kb.cat_or_overall_show_button)

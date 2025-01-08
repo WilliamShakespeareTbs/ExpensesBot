@@ -128,3 +128,26 @@ async def delete_category(cat_id):
         cat_to_delete = result.scalar_one()
         await session.delete(cat_to_delete)
         await session.commit()
+
+
+async def change_cat_name(cat_id, new_cat_name):
+    async with async_session() as session:
+        query = select(Category).filter_by(id = cat_id)
+        result = await session.execute(query)
+        cat = result.scalar_one()
+        cat.name = new_cat_name
+        await session.commit()
+
+
+async def change_exp_prop(exp_to_edit, prop_name, new_prop):
+    async with async_session() as session:
+        query = select(Expence).filter_by(id = exp_to_edit.id)
+        result = await session.execute(query)
+        exp = result.scalar_one()
+        if prop_name == 'date':
+            exp.date = new_prop
+        if prop_name == 'sum':
+            exp.sum = new_prop
+        if prop_name == 'comment':
+            exp.comment = new_prop
+        await session.commit()

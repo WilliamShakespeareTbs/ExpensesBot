@@ -7,6 +7,7 @@ class Categories(StatesGroup):
     category_for_expense = State()
     category_for_look = State()
     delete_cat = State()
+    edit_cat = State()
 
 
 class Expenses(StatesGroup):
@@ -15,4 +16,10 @@ class Expenses(StatesGroup):
     comment = State()
     delete_exp = State()
     delete_exp_by_cat = State()
-    delete_exp_from_list = State()
+    edit_exp = State()
+    edit_exp_by_cat = State()
+    prop_to_edit = State()
+    edit_cat = State()
+    edit_date = State()
+    edit_sum = State()
+    edit_comment = State()

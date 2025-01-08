@@ -36,6 +36,11 @@ async def enter_custom_date(message: Message, state: FSMContext):
     await message.answer(text="Дата не распознана. Пожалуйста, напишите дату в формате ДД.ММ.ГГГГ")
 
 
+@router.message(Expenses.date)
+async def enter_nontext_date(message: Message):
+    await message.answer(text="Дата не распознана. Пожалуйста, напишите дату в формате ДД.ММ.ГГГГ")
+
+
 @router.callback_query(Expenses.date)
 async def choose_date_of_expences(callback: CallbackQuery, state: FSMContext):
     delta_day = 0

@@ -42,39 +42,18 @@ async def delete_exp_from_cat(callback :CallbackQuery, state: FSMContext):
 
 
 @router.message(Expenses.delete_exp, F.text)
-async def delete_from_cat_by_num(message: Message, state: FSMContext):
+async def delete_by_num(message: Message, state: FSMContext):
     try:
         num = int(message.text)
     except:
         await message.answer(text='Это не число, попробуйте снова!')
         return
-    try:
+    if num > 0 and num <= len(await state.get_value('sorted_exp_list')):
         exp_to_delete = (await state.get_value('sorted_exp_list'))[num-1]
-    except:
-        await message.answer(text='Нет такого номера')
+    else:
         return
     exp_text = await cal.create_a_list_on_conditions([exp_to_delete], head_text='')
     await request.delete_expence_by_exp_class(exp_to_delete)
     await state.clear()
     await message.answer(text=f"Удалён следующий расход:\n{exp_text}")
     
-
-    
-'''
-@router.message(Expenses.delete_exp_from_list, F.text)
-async def delete_from_list_by_num(message: Message, state: FSMContext):
-    try:
-        num = int(message.text)
-    except:
-        await message.answer(text='Это не число, попробуйте снова!')
-        return
-    try:
-        exp_to_delete = (await state.get_value('sorted_exp_list'))[num-1]
-    except:
-        await message.answer(text='Нет такого номера')
-        return
-    exp_text = await cal.create_a_list_on_conditions([exp_to_delete], head_text='')
-    await request.delete_expence_by_exp_class(exp_to_delete)
-    await state.clear()
-    await message.answer(text=f"Удалён следующий расход:\n{exp_text}")
-    '''
