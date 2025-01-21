@@ -1,12 +1,25 @@
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
+import callback_constructor as cc
 
-async def create_cat_kb(cat_dict):
+
+async def create_cat_kb(cat_dict: dict):
     categories_kb = InlineKeyboardBuilder()
     for k, v in cat_dict.items():
         categories_kb.add(InlineKeyboardButton(text=v, callback_data=f'cat_{k}'))
     return categories_kb.adjust(2).as_markup()
+
+
+async def button_to_list_pages(prev = True, next = True, page = 1, show_cat = True, cat_id = None):
+    list_pages = InlineKeyboardBuilder()
+    prev_button_data = cc.PageButton(page = page+1, show_cat=show_cat, cat_id=cat_id)
+    next_button_data = cc.PageButton(page = page-1, show_cat=show_cat, cat_id=cat_id)
+    if prev:
+        list_pages.add(InlineKeyboardButton(text='Раньше', callback_data=prev_button_data.pack()))
+    if next:
+        list_pages.add(InlineKeyboardButton(text='Позже', callback_data=next_button_data.pack()))
+    return list_pages.adjust(2).as_markup()
 
 
 date_buttons = InlineKeyboardMarkup(inline_keyboard=[

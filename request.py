@@ -1,45 +1,37 @@
 from models import Base, User, Category, Expence, async_session
 from sqlalchemy import select, insert
+from sqlalchemy.orm import aliased
 from models import User
 
 
-async def find_id_by_tg_id(tg_id):
+async def add_category(category_name, tg_id):
     async with async_session() as session:
         query = select(User).filter_by(tg_id = tg_id)
         result = await session.execute(query)
-        our_user = result.scalars().all()
-        for i in our_user:
-            return i.id
-
-
-async def add_category(category_name, tg_id):
-    user_id = await find_id_by_tg_id(tg_id)
-    async with async_session() as session:
-        new_category = Category(name = category_name, user_id = user_id, sum = 0)
+        user = result.scalar_one()
+        new_category = Category(name = category_name, user_id = user.id, sum = 0)
         session.add(new_category)
         await session.commit()
 
 
 async def get_categories(tg_id):
     async with async_session() as session:
-        user_id = await find_id_by_tg_id(tg_id)
-        query = select(Category).filter_by(user_id = user_id)
+        query = select(Category).join(User, Category.user_id == User.id).filter(User.tg_id == tg_id)
         result = await session.execute(query)
-        cat_dict = result.scalars().all()
+        cat_seq = result.scalars().all()
         dict_sorted_by_name = dict()
-        for i in cat_dict:
+        for i in cat_seq:
             dict_sorted_by_name.update({i.id : i.name})
         return dict_sorted_by_name
 
 
-async def check_for_user(int):
+async def check_for_user(tg_id):
     async with async_session() as session:
-        query = select(User)
+        query = select(User).filter_by(tg_id = tg_id)
         result = await session.execute(query)
-        users = result.scalars().all()
-        for u in users:
-            if u.tg_id == int:
-                return False
+        users = result.scalar_one()
+        if users:
+            return False
         return True
 
 
@@ -66,30 +58,27 @@ async def get_category_name_from_category_id(cat_id):
     async with async_session() as session:
         query = select(Category).filter_by(id = cat_id)
         result = await session.execute(query)
-        name = result.scalars().all()
-        for n in name:
-            return n.name
+        name = result.scalar_one()
+        return name.name
         
 
 async def get_list_of_expenses_from_category_id(cat_id):
     async with async_session() as session:
-        query = select(Expence).filter_by(category = cat_id)
+        query = select(Expence).filter_by(category = cat_id).order_by(Expence.date)
         result = await session.execute(query)
         exp = result.scalars().all()
-        exp_list = []
-        for e in exp:
-            exp_list.append(e)
-        return exp_list
+        return exp
         
 
-async def get_list_of_all_expenses(tg_id):
-    exp_list = []
-    cat_list = await get_categories(tg_id)
-    for c in cat_list:
-        e = await get_list_of_expenses_from_category_id(c)
-        for elem in e:
-            exp_list.append(elem)
-    return exp_list
+async def get_list_of_all_expenses_in_one_query(tg_id):
+    async with async_session() as session:
+        u = aliased(User)
+        c = aliased(Category)
+        e = aliased(Expence)
+        query = select(e).join(c, e.category == c.id).join(u, c.user_id == u.id).filter(u.tg_id == tg_id).order_by(e.date)
+        result = await session.execute(query)
+        exps = result.scalars().all()
+        return exps
 
 
 async def delete_expence_by_exp_class(exp):
@@ -111,13 +100,12 @@ async def get_cat_id_from_cat_name(tg_id, cat_name):
                 return c.id
             
 
-async def transfer_expense_to_another_cat(old_cat_id, new_cat_id):
+async def transfer_expense_to_another_cat(exp_to_edit, new_cat_id):
     async with async_session() as session:
-        query = select(Expence).filter_by(category = old_cat_id)
+        query = select(Expence).filter_by(id = exp_to_edit.id)
         result = await session.execute(query)
-        exp_s = result.scalars().all()
-        for e in exp_s:
-            e.category = new_cat_id
+        exp = result.scalar_one()
+        exp.category = new_cat_id
         await session.commit()
 
 

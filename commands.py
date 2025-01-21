@@ -23,12 +23,14 @@ async def start(message: Message):
 
 @router.message(Command('addcategory'))
 async def new_category(message: Message, state: FSMContext):
+    await state.clear()
     await message.answer('Выберите имя для новой категории: ')
     await state.set_state(Categories.category_name)
 
 
 @router.message(Command('showcategories'))
 async def show_categories(message: Message, state: FSMContext):
+    await state.clear()
     await state.set_state(Categories.category_for_look)
     cat_dict = await request.get_categories(message.from_user.id)
     inline_list = await kb.create_cat_kb(cat_dict)
@@ -37,6 +39,7 @@ async def show_categories(message: Message, state: FSMContext):
 
 @router.message(Command('addexpense'))
 async def add_new_expense(message: Message, state: FSMContext):
+    await state.clear()
     await state.set_state(Categories.category_for_expense)
     cat_dict = await request.get_categories(message.from_user.id)
     inline_list = await kb.create_cat_kb(cat_dict)
@@ -44,18 +47,21 @@ async def add_new_expense(message: Message, state: FSMContext):
 
 
 @router.message(Command('showexpenses'))
-async def show_categories(message: Message, state: FSMContext):
-    await loe.show_list_of_all_expenses(message.from_user.id)
+async def show_expenses(message: Message, state: FSMContext):
+    await state.clear()
+    await loe.show_list_of_all_expenses(message)
 
 
 @router.message(Command('deleteexpense'))
 async def delete_expense(message: Message, state: FSMContext):
+    await state.clear()
     await state.set_state(Expenses.delete_exp)
     await message.answer(text='Выберите расход для удаления: ', reply_markup=kb.cat_or_overall_show_button)
 
 
 @router.message(Command('deletecategory'))
 async def delete_category(message: Message, state: FSMContext):
+    await state.clear()
     await state.set_state(Categories.delete_cat)
     cat_dict = await request.get_categories(message.from_user.id)
     inline_list = await kb.create_cat_kb(cat_dict)
@@ -64,6 +70,7 @@ async def delete_category(message: Message, state: FSMContext):
 
 @router.message(Command('editcategory'))
 async def edit_category(message: Message, state: FSMContext):
+    await state.clear()
     await state.set_state(Categories.edit_cat)
     cat_dict = await request.get_categories(message.from_user.id)
     inline_list = await kb.create_cat_kb(cat_dict)
@@ -72,5 +79,6 @@ async def edit_category(message: Message, state: FSMContext):
 
 @router.message(Command('editexpense'))
 async def edit_category(message: Message, state: FSMContext):
+    await state.clear()
     await state.set_state(Expenses.edit_exp)
     await message.answer(text="Выберите расход для редактирования", reply_markup=kb.cat_or_overall_show_button)

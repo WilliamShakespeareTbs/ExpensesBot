@@ -7,7 +7,6 @@ import request
 from states import Categories
 
 router = Router()
-bot = None
 
 @router.callback_query(Categories.delete_cat)
 async def del_category(callback: CallbackQuery, state: FSMContext):
@@ -17,4 +16,4 @@ async def del_category(callback: CallbackQuery, state: FSMContext):
     await request.transfer_expense_to_another_cat(cat_id, other_cat_id)
     await request.delete_category(cat_id)
     await state.clear()
-    await bot.send_message(chat_id = callback.from_user.id, text = f"Категория {cat_name} успешно удалена")
+    await callback.message.answer(text = f"Категория {cat_name} успешно удалена")

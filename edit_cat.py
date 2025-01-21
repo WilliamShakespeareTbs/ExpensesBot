@@ -7,14 +7,13 @@ import request
 from states import Categories
 
 router = Router()
-bot = None
 
 
 @router.callback_query(Categories.edit_cat)
 async def get_category_to_edit(callback: CallbackQuery, state: FSMContext):
     cat_id = int(callback.data.split('_')[-1])
     await state.update_data(cat_id = cat_id)
-    await bot.send_message(chat_id = callback.from_user.id, text = f"Введите новое имя для категории: ")
+    await callback.message.answer(text = f"Введите новое имя для категории: ")
 
 
 @router.message(Categories.edit_cat, F.text)

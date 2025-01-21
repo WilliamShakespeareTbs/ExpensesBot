@@ -2,7 +2,6 @@ from aiogram.types import Message
 from aiogram.fsm.context import FSMContext
 from aiogram import Router, F
 
-import keyboard as kb
 import request
 from states import Categories
 

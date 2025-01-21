@@ -1,17 +1,18 @@
 from datetime import datetime
+from aiogram.types import Message
 
-def date_validate(datestring):
-    date_pieces = datestring.split('.')
-    if(len(date_pieces) == 3):
-        try:
+def date_validate(message: Message):
+    try:
+        date_pieces = message.text.split('.')
+        if(len(date_pieces) == 3):
             day = int(date_pieces[0])
             month = int(date_pieces[1])
             year = int(date_pieces[2])
-            final_date = datetime(year, month, day)
-            return final_date
-        except:
-            pass
-    else: return False
+            valid_date = datetime(year, month, day)
+            return {'valid_date' : valid_date}
+    except:
+        pass
+    return None
 
 
 def normalize_date(date: datetime) -> str:
