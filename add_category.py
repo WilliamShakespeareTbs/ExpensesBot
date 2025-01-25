@@ -13,6 +13,10 @@ async def new_category_name(message: Message, state: FSMContext):
     new_cat_name = message.text
     if len(new_cat_name) > 20:
         new_cat_name = new_cat_name[:20]
+    if new_cat_name.strip() == 'Прочее':
+        await message.answer(text = f"Так категорию назвать нельзя!")
+        await state.clear()
+        return
     await request.add_category(new_cat_name, message.from_user.id)
     await state.clear()
     await message.answer(text="Категория добавлена")

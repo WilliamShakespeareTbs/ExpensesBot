@@ -4,52 +4,32 @@ from aiogram.types.callback_query import CallbackQuery
 from aiogram.fsm.context import FSMContext
 
 from states import Expenses
-import keyboard as kb
-import list_of_expenses as loe
+import expenses_manager
 import request
-import create_a_list_of_expenses as cal
+import lists_messages_constructor as lmr
 
 router = Router()
 
 
 @router.callback_query(Expenses.delete_exp)
 async def choose_way_to_show_exp(callback :CallbackQuery, state: FSMContext):
+    await callback.answer('Способ отображения выбран')
     if callback.data == 'category':
-        cat_dict = await request.get_categories(callback.from_user.id)
-        cat_buttons = await kb.create_cat_kb(cat_dict)
-        await callback.message.answer(text = 'Выберите категорию расходов', reply_markup = cat_buttons)
-        await state.set_state(Expenses.delete_exp_by_cat)
+        await expenses_manager.show_by_category(callback, Expenses.delete_exp_by_cat, state)
     elif callback.data == 'overall':
-        sorted_exp_list = await loe.show_list_of_all_expenses(tg_id=callback.from_user.id, return_list=True)
-        await callback.message.answer(text = 'Введите номер расхода, который хотите удалить:')
-        await state.update_data(sorted_exp_list = sorted_exp_list)
+        await expenses_manager.show_all(callback, 'удалить', state)
 
 
 @router.callback_query(Expenses.delete_exp_by_cat)
 async def delete_exp_from_cat(callback :CallbackQuery, state: FSMContext):
-    cat_id = int(callback.data.split('_')[-1])
-    cat_name = await request.get_category_name_from_category_id(cat_id)
-    exp_list = await request.get_list_of_expenses_from_category_id(cat_id)
-    head_text = f"Категория: {cat_name}, дата, сумма, комментарий\n"
-    exp_text = await cal.create_a_list_on_conditions(exp_list, head_text, show_cat=False)
-    await callback.message.answer(text = exp_text)
-    await callback.message.answer(text = 'Введите номер расхода, который хотите удалить:')
-    await state.set_state(Expenses.delete_exp)
-    await state.update_data(sorted_exp_list = exp_list)
+    await expenses_manager.choose_num_from_cat(callback, 'удалить', Expenses.delete_exp, state)
 
 
 @router.message(Expenses.delete_exp, F.text)
 async def delete_by_num(message: Message, state: FSMContext):
-    try:
-        num = int(message.text)
-    except:
-        await message.answer(text='Это не число, попробуйте снова!')
-        return
-    if num > 0 and num <= len(await state.get_value('sorted_exp_list')):
-        exp_to_delete = (await state.get_value('sorted_exp_list'))[num-1]
-    else:
-        return
-    exp_text = await cal.create_a_list_on_conditions([exp_to_delete], head_text='')
+    exp_to_delete = await expenses_manager.filter_num(message, state)
+    if not exp_to_delete: return
+    exp_text = await lmr.simple_message_constructor([exp_to_delete])
     await request.delete_expence_by_exp_class(exp_to_delete)
     await state.clear()
     await message.answer(text=f"Удалён следующий расход:\n{exp_text}")

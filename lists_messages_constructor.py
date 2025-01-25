@@ -33,13 +33,13 @@ async def message_constructor(page, show_cat, cat_id: int | None, tg_id: int | N
         exp_list = await request.get_list_of_all_expenses_in_one_query(tg_id)
     sequence_list = await create_a_list_from_objects(exp_list, show_cat)
     if type(sequence_list) is not list:
-        return sequence_list
+        return sequence_list, None
     if(show_cat):
         head_text = f"Категория, дата, сумма, комментарий\n"
     else:
         head_text = f"Категория: {cat_name}, дата, сумма, комментарий\n"
     exp_text = head_text
-    exp_per_page = 5
+    exp_per_page = 20
     num_of_pages = math.ceil(len(sequence_list)/5)
     prev = True
     next = True

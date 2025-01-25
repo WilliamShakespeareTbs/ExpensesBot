@@ -21,6 +21,7 @@ async def switch_from_date_to_sum(valid_date, state, message):
 
 @router.callback_query(Categories.category_for_expense)
 async def choose_list_of_expences(callback: CallbackQuery, state: FSMContext):
+    await callback.answer('Категория выбрана!')
     await state.set_state(Expenses.date)
     await state.update_data(cat_id = int(callback.data.split('_')[-1]))
     await callback.message.answer(text='Выберите дату расходов:', reply_markup=kb.date_buttons)
@@ -40,6 +41,7 @@ async def enter_nontext_date(message: Message):
 async def choose_date_of_expences(callback: CallbackQuery, state: FSMContext):
     delta_day = 0
     if callback.data == 'otherdate':
+        await callback.answer('Ожидается дата')
         await callback.message.answer(text = 'Напишите дату в формате ДД.ММ.ГГГГ')
         return
     elif callback.data == 'today':
@@ -48,6 +50,7 @@ async def choose_date_of_expences(callback: CallbackQuery, state: FSMContext):
         delta_day = 1
     elif callback.data == 'preyesterday':
         delta_day = 2
+    await callback.answer('Дата выбрана!')
     valid_date = datetime.datetime.now().date() - datetime.timedelta(days=delta_day)
     await switch_from_date_to_sum(valid_date, state, callback.message)
 
@@ -89,6 +92,7 @@ async def exp_comment_nontext(message: Message):
 
 @router.callback_query(Expenses.comment)
 async def skip_comment(callback: CallbackQuery, state: FSMContext):
+    await callback.answer('Добавлен пустой комментарий')
     data = await state.get_data()
     await request.add_expension(data)
     await state.clear()

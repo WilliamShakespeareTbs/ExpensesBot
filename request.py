@@ -89,12 +89,9 @@ async def delete_expence_by_exp_class(exp):
 
 async def get_cat_id_from_cat_name(tg_id, cat_name):
     async with async_session() as session:
-        query = select(User).filter_by(tg_id = tg_id)
+        query = select(Category).join(User, Category.user_id == User.id).filter(User.tg_id == tg_id)
         result = await session.execute(query)
-        user = result.scalar_one()
-        query_2 = select(Category).filter_by(user_id = user.id)
-        result_2 = await session.execute(query_2)
-        cats = result_2.scalars().all()
+        cats = result.scalars().all()
         for c in cats:
             if c.name == cat_name:
                 return c.id
@@ -106,6 +103,16 @@ async def transfer_expense_to_another_cat(exp_to_edit, new_cat_id):
         result = await session.execute(query)
         exp = result.scalar_one()
         exp.category = new_cat_id
+        await session.commit()
+
+
+async def transger_all_expenses_to_other_cat(cat_id, other_cat_id):
+    async with async_session() as session:
+        query = select(Expence).filter_by(category = cat_id)
+        result = await session.execute(query)
+        exps = result.scalars().all()
+        for exp in exps:
+            exp.category = other_cat_id
         await session.commit()
 
 

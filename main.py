@@ -4,7 +4,6 @@ from dotenv import load_dotenv
 import os
 
 import add_expense
-import config
 import models
 import commands, add_category, list_of_expenses, delete_exp, delete_cat, edit_cat, edit_exp, listing_pages
 
@@ -33,3 +32,4 @@ if __name__ == '__main__':
         asyncio.run(main())
     except KeyboardInterrupt:
         print('Exit')
+        
