@@ -1,5 +1,6 @@
-from models import Base, User, Category, Expence, async_session
+from models import Base, User, Category, Expense, async_session
 from sqlalchemy import select, insert
+from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import aliased
 from models import User
 
@@ -29,10 +30,11 @@ async def check_for_user(tg_id):
     async with async_session() as session:
         query = select(User).filter_by(tg_id = tg_id)
         result = await session.execute(query)
-        users = result.scalar_one()
-        if users:
+        try:
+            result.scalar_one()
+            return True
+        except NoResultFound:
             return False
-        return True
 
 
 async def add_new_user(tg_id):
@@ -49,8 +51,8 @@ async def add_expension(data: dict):
     sum = data.get('sum')
     comment = data.get('comment')
     async with async_session() as session:
-        new_expence = Expence(category = category_id, date = date, sum = sum, comment=comment)
-        session.add(new_expence)
+        new_expense = Expense(category = category_id, date = date, sum = sum, comment=comment)
+        session.add(new_expense)
         await session.commit()
 
 
@@ -64,7 +66,7 @@ async def get_category_name_from_category_id(cat_id):
 
 async def get_list_of_expenses_from_category_id(cat_id):
     async with async_session() as session:
-        query = select(Expence).filter_by(category = cat_id).order_by(Expence.date)
+        query = select(Expense).filter_by(category = cat_id).order_by(Expense.date)
         result = await session.execute(query)
         exp = result.scalars().all()
         return exp
@@ -74,7 +76,7 @@ async def get_list_of_all_expenses_in_one_query(tg_id):
     async with async_session() as session:
         u = aliased(User)
         c = aliased(Category)
-        e = aliased(Expence)
+        e = aliased(Expense)
         query = select(e).join(c, e.category == c.id).join(u, c.user_id == u.id).filter(u.tg_id == tg_id).order_by(e.date)
         result = await session.execute(query)
         exps = result.scalars().all()
@@ -99,7 +101,7 @@ async def get_cat_id_from_cat_name(tg_id, cat_name):
 
 async def transfer_expense_to_another_cat(exp_to_edit, new_cat_id):
     async with async_session() as session:
-        query = select(Expence).filter_by(id = exp_to_edit.id)
+        query = select(Expense).filter_by(id = exp_to_edit.id)
         result = await session.execute(query)
         exp = result.scalar_one()
         exp.category = new_cat_id
@@ -108,7 +110,7 @@ async def transfer_expense_to_another_cat(exp_to_edit, new_cat_id):
 
 async def transger_all_expenses_to_other_cat(cat_id, other_cat_id):
     async with async_session() as session:
-        query = select(Expence).filter_by(category = cat_id)
+        query = select(Expense).filter_by(category = cat_id)
         result = await session.execute(query)
         exps = result.scalars().all()
         for exp in exps:
@@ -136,7 +138,7 @@ async def change_cat_name(cat_id, new_cat_name):
 
 async def change_exp_prop(exp_to_edit, prop_name, new_prop):
     async with async_session() as session:
-        query = select(Expence).filter_by(id = exp_to_edit.id)
+        query = select(Expense).filter_by(id = exp_to_edit.id)
         result = await session.execute(query)
         exp = result.scalar_one()
         if prop_name == 'date':

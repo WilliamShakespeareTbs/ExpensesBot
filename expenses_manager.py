@@ -17,21 +17,21 @@ async def show_all(callback, keyword, state: FSMContext):
     exp_list = await request.get_list_of_all_expenses_in_one_query(callback.message.chat.id)
     exp_text, pages_kb = await lmr.message_constructor(page=1, show_cat=True, cat_id=None, tg_id=callback.message.chat.id)
     await callback.message.answer(text = exp_text, reply_markup=pages_kb)
-    await callback.message.answer(text = f'Введите номер расхода, который хотите {keyword}:')
+    if len(exp_list) > 0:
+        await callback.message.answer(text = f'Введите номер расхода, который хотите {keyword}:')
     await state.update_data(sorted_exp_list = exp_list)
 
 
 async def choose_num_from_cat(callback, keyword, st: Expenses, state: FSMContext):
     await callback.answer('Список готов!')
-    cat_id = int(callback.data.split('_')[-1])
+    try:
+        cat_id = int(callback.data.split('_')[-1])
+    except ValueError:
+        return
     exp_list = await request.get_list_of_expenses_from_category_id(cat_id)
-    if exp_list:
-        exp_text, pages_kb = await lmr.message_constructor(page=1, show_cat=False, cat_id=cat_id, tg_id=callback.message.chat.id)
-    else:
-        exp_text = await lmr.message_constructor(page=1, show_cat=False, cat_id=cat_id, tg_id=callback.message.chat.id)
-        pages_kb = None    
+    exp_text, pages_kb = await lmr.message_constructor(page=1, show_cat=False, cat_id=cat_id, tg_id=callback.message.chat.id)
     await callback.message.answer(text = exp_text, reply_markup=pages_kb)
-    if pages_kb:
+    if len(exp_list) > 0:
         await callback.message.answer(text = f'Введите номер расхода, который хотите {keyword}:')
     await state.set_state(st)
     await state.update_data(sorted_exp_list = exp_list)

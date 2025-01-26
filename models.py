@@ -29,8 +29,8 @@ class Category(Base):
     user_id: Mapped[BigInteger] = mapped_column(ForeignKey('users.id'))
 
 
-class Expence(Base):
-    __tablename__ = 'expences'
+class Expense(Base):
+    __tablename__ = 'expenses'
 
     id: Mapped[int] = mapped_column(primary_key=True)
     date: Mapped[datetime] = mapped_column(server_default=func.now())
@@ -42,5 +42,5 @@ class Expence(Base):
 async def async_main():
     async with engine.connect() as conn:
     #    await conn.run_sync(Base.metadata.drop_all)
-    #    await conn.run_sync(Base.metadata.create_all)
+        await conn.run_sync(Base.metadata.create_all)
         pass

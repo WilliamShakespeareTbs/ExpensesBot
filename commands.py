@@ -13,12 +13,13 @@ router = Router()
 
 @router.message(CommandStart())
 async def start(message: Message):
-    is_new = await request.check_for_user(message.from_user.id)
-    if is_new:
+    is_user = await request.check_for_user(message.from_user.id)
+    if is_user:
+        await message.answer("База данных уже создана")
+    else:
         await message.answer('Добро пожаловать! Вам доступна категория Прочее')
         await request.add_new_user(message.from_user.id)
-    else:
-        await message.answer("База данных уже создана")
+    
 
 
 @router.message(Command('addcategory'))
